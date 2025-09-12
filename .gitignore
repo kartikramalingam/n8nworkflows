@@ -1,0 +1,23 @@
+# General
+.DS_Store
+.idea/
+.vscode/
+*.log
+tmp/
+dist/
+
+# Env files
+.env
+.env.*
+
+# Node
+node_modules/
+
+# Local n8n data (not used here, but ignore if present)
+.n8n/
+data/
+
+# Never commit real credentials
+credentials/*.json
+credentials/secrets/
+
