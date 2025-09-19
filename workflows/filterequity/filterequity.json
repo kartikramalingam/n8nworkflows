@@ -25,7 +25,17 @@
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ $json.httpBodies.equity }}",
-        "options": {}
+        "options": {
+          "pagination": {
+            "mode": "page",
+            "pageKey": "page",
+            "nextPageKey": "next_page",
+            "sendQuery": true,
+            "sendBody": false
+          }
+        },
+        "returnAll": true,
+        "limit": 100
       },
       "id": "HTTP-Request-1",
       "name": "equity",
@@ -43,7 +53,17 @@
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ $json.httpBodies.market }}",
-        "options": {}
+        "options": {
+          "pagination": {
+            "mode": "page",
+            "pageKey": "page",
+            "nextPageKey": "next_page",
+            "sendQuery": true,
+            "sendBody": false
+          }
+        },
+        "returnAll": true,
+        "limit": 100
       },
       "id": "HTTP-Request-2",
       "name": "market",
@@ -67,7 +87,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const defaults = {\n  asofdate: null,\n  securitytype: ['Kartik', 'Akira'],\n  marketSector: ['Sandhya', 'Atharva'],\n  numberofdays: 20,\n  marketcaplowerlimit: 250000,\n  sharefloat: 0.7,\n  operator: 'OR',\n  httpBodies: {\n    market: {\n      filters: {},\n      groups: [\n        { asOf: '2020-05-06', attribute_code: 'marketSector', value: { eq: 'Equity', type: 'text' }},\n      ],\n      limit: 100,\n      logic: 'OR',\n    },\n    equity: {\n      filters: { company_ids: [] },\n      groups: [\n        { asOf: '2020-05-06', attribute_code: 'securitytype', value: { eq: 'ETF', type: 'text' }},\n      ],\n      limit: 100,\n      logic: 'AND',\n    }\n  }\n};\n\nfunction deepMerge(target, source) {\n  for (const key in source) {\n    if (\n      source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])\n    ) {\n      if (!target[key]) target[key] = {};\n      deepMerge(target[key], source[key]);\n    } else {\n      target[key] = source[key];\n    }\n  }\n  return target;\n}\n\nreturn items.map(item => {\n  const inputBody = item.json.body || {};\n  let output = JSON.parse(JSON.stringify(defaults)); // deep copy\n  \n  output = deepMerge(output, inputBody);\n\n  if (!output.asofdate) {\n    output.asofdate = new Date().toISOString().slice(0, 10);\n  }\n\n  item.json = output;\n  return item;\n});\n"
+        "jsCode": "const defaults = {\n  asofdate: null,\n  securitytype: ['Kartik', 'Akira'],\n  marketSector: ['Sandhya', 'Atharva'],\n  numberofdays: 20,\n  marketcaplowerlimit: 250000,\n  sharefloat: 0.7,\n  operator: 'OR',\n  httpBodies: {\n    market: {\n      filters: {},\n      groups: [\n        { attribute_code: 'marketSector', value: { eq: 'Equity', type: 'text' } }\n      ],\n      logic: 'OR'\n    },\n    equity: {\n      filters: { company_ids: [] },\n      groups: [\n        { attribute_code: 'securitytype', value: { eq: 'ETF', type: 'text' } }\n      ],\n      logic: 'AND'\n    }\n  }\n};\n\nfunction deepMerge(target, source) {\n  for (const key in source) {\n    if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {\n      if (!target[key]) target[key] = {};\n      deepMerge(target[key], source[key]);\n    } else {\n      target[key] = source[key];\n    }\n  }\n  return target;\n}\n\nreturn items.map(item => {\n  const inputBody = item.json.body || {};\n  let output = JSON.parse(JSON.stringify(defaults)); // deep copy\n  \n  output = deepMerge(output, inputBody);\n\n  // Use current date for asofdate if not provided\n  if (!output.asofdate) {\n    output.asofdate = new Date().toISOString().slice(0, 10);\n  }\n\n  // Set items_asofdate and asOf for market\n  output.httpBodies.market.items_asofdate = output.asofdate;\n  if (output.httpBodies.market.groups) {\n    output.httpBodies.market.groups.forEach(g => g.asOf = output.asofdate);\n  }\n\n  // Set items_asofdate and asOf for equity\n  output.httpBodies.equity.items_asofdate = output.asofdate;\n  if (output.httpBodies.equity.groups) {\n    output.httpBodies.equity.groups.forEach(g => g.asOf = output.asofdate);\n  }\n\n  item.json = output;\n  return item;\n});\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
