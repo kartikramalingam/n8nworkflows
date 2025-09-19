@@ -1,0 +1,145 @@
+{
+  "name": "filterequity",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "filterequity",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "Webhook-Input-Trigger",
+      "name": "input trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        240,
+        304
+      ],
+      "webhookId": "b395247a-0805-4e8c-a532-9110fa0ab4ad"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://192.168.0.59:8000/nav/search",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.httpBodies.equity }}",
+        "options": {}
+      },
+      "id": "HTTP-Request-1",
+      "name": "equity",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        928,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://192.168.0.59:8000/nav/search",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.httpBodies.market }}",
+        "options": {}
+      },
+      "id": "HTTP-Request-2",
+      "name": "market",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        928,
+        432
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "Merge-Results",
+      "name": "Merge Results",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2,
+      "position": [
+        1184,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const defaults = {\n  asofdate: null,\n  securitytype: ['Kartik', 'Akira'],\n  marketSector: ['Sandhya', 'Atharva'],\n  numberofdays: 20,\n  marketcaplowerlimit: 250000,\n  sharefloat: 0.7,\n  operator: 'OR',\n  httpBodies: {\n    market: {\n      filters: {},\n      groups: [\n        { asOf: '2020-05-06', attribute_code: 'marketSector', value: { eq: 'Equity', type: 'text' }},\n      ],\n      limit: 100,\n      logic: 'OR',\n    },\n    equity: {\n      filters: { company_ids: [] },\n      groups: [\n        { asOf: '2020-05-06', attribute_code: 'securitytype', value: { eq: 'ETF', type: 'text' }},\n      ],\n      limit: 100,\n      logic: 'AND',\n    }\n  }\n};\n\nfunction deepMerge(target, source) {\n  for (const key in source) {\n    if (\n      source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])\n    ) {\n      if (!target[key]) target[key] = {};\n      deepMerge(target[key], source[key]);\n    } else {\n      target[key] = source[key];\n    }\n  }\n  return target;\n}\n\nreturn items.map(item => {\n  const inputBody = item.json.body || {};\n  let output = JSON.parse(JSON.stringify(defaults)); // deep copy\n  \n  output = deepMerge(output, inputBody);\n\n  if (!output.asofdate) {\n    output.asofdate = new Date().toISOString().slice(0, 10);\n  }\n\n  item.json = output;\n  return item;\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        512,
+        448
+      ],
+      "id": "35d79330-2a1d-4500-a7d8-ff7e1e5b04d7",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "input trigger": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "equity": {
+      "main": [
+        [
+          {
+            "node": "Merge Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "market": {
+      "main": [
+        [
+          {
+            "node": "Merge Results",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "equity",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "market",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "saveExecutionProgress": true,
+    "executionOrder": "v1"
+  },
+  "versionId": "a6ed8826-8b25-418b-9fe0-4223e3e30b38",
+  "meta": {
+    "instanceId": "5c9b9abd009f65d917b60f4ba6c59dcc1bb516fef146ff24bb082bc7893ea569"
+  },
+  "id": "Gbh605MyBbMptQdq",
+  "tags": []
+}

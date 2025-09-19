@@ -1,0 +1,237 @@
+{
+  "name": "nasdaqperplexity",
+  "nodes": [
+    {
+      "parameters": {
+        "messages": {
+          "message": [
+            {
+              "content": "=Prompt:\n\nAct as an expert financial researcher. Using only Yahoo Finance, Perplexity Finance, officially listed exchange websites, and financial regulators, research and report the following for each entity in the input JSON array:\n\nsharesOutstanding\n\nmarketCap (maximum precision)\n\nipoDate\n\nceo\n\nsector\n\nindustry\n\nInclude all input fields with the output for seamless downstream processing. Each record returned must also include an array of sources, reported in a field named aisources.\n\nResearch Input:\njson\n\n{{ JSON.stringify($json.body) }}\n\n\nExpected Output Format:\n\njson\n[\n  {\n    \"cik\": 1045810,\n    \"name\": \"NVIDIA CORP\",\n    \"ticker\": \"NVDA\",\n    \"exchangename\": \"Nasdaq\",\n    \"sharesOutstanding\": \"<number>\",\n    \"marketCap\": \"<decimal>\",\n    \"ipoDate\": \"<YYYY-MM-DD>\",\n    \"ceo\": \"<string>\",\n    \"sector\": \"<string>\",\n    \"industry\": \"<string>\",\n    \"aisources\": [\"<source1>\", \"<source2>\", ...]\n  },\n  // repeat for each company\n] \nNo explanation. Output only minified JSON array .Provide the most recent and accurate information for each field, and cite all sources used from the allowed list in the \"aisources\" array. Please do not add anything, including explaination,  more than the json structure specified above. "
+            }
+          ]
+        },
+        "options": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.perplexity",
+      "typeVersion": 1,
+      "position": [
+        176,
+        0
+      ],
+      "id": "8e7b3077-4454-469f-9448-dfbd7033cdbc",
+      "name": "Message a model",
+      "credentials": {
+        "perplexityApi": {
+          "id": "OJp0j3bVvBZfM7uM",
+          "name": "Perplexity account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://192.168.0.59:8000/openfigi-batch/jobs",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.data }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        848,
+        0
+      ],
+      "id": "defc0bf6-30a5-429e-a409-15da0f5d1f72",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "b3abe7a3-13ae-4fab-a92c-e10b6219b1a3",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -48,
+        0
+      ],
+      "id": "b44ed88e-5a58-4196-a186-d80fb08b28ed",
+      "name": "Webhook",
+      "webhookId": "b3abe7a3-13ae-4fab-a92c-e10b6219b1a3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n \"Code\" node — Mode: Run Once for All Items\n// Input example (items[0].json) is the array you posted.\n// Output: one item per object from the content JSON.\n\nfunction getContentString(root) {\n  // Try common paths (array wrapper or single object)\n  let content =\n    root?.[0]?.choices?.[0]?.message?.content ??\n    root?.choices?.[0]?.message?.content ??\n    root?.message?.content ??\n    root?.content ??\n    null;\n\n  // If not found and root is array/object, scan shallowly\n  if (!content && Array.isArray(root)) {\n    for (const el of root) {\n      const c =\n        el?.choices?.[0]?.message?.content ??\n        el?.message?.content ??\n        el?.content;\n      if (c) { content = c; break; }\n    }\n  }\n  if (!content) throw new Error(\"Could not locate choices[0].message.content\");\n  return String(content);\n}\n\nfunction stripCodeFences(s) {\n  // Remove leading/trailing ``` or ```json fences if present\n  return s.trim().replace(/^```(?:json)?\\s*|\\s*```$/g, \"\");\n}\n\nfunction parseJsonFromString(s) {\n  // Try direct parse first\n  try { return JSON.parse(s); } catch {}\n\n  // Fallback: extract the first {...} or [...] block\n  const startObj = s.indexOf(\"{\");\n  const startArr = s.indexOf(\"[\");\n  const start = Math.min(\n    startObj === -1 ? Number.POSITIVE_INFINITY : startObj,\n    startArr === -1 ? Number.POSITIVE_INFINITY : startArr\n  );\n  const end = Math.max(s.lastIndexOf(\"}\"), s.lastIndexOf(\"]\"));\n  if (start !== Infinity && end > start) {\n    const slice = s.slice(start, end + 1);\n    return JSON.parse(slice);\n  }\n  throw new Error(\"No valid JSON block found inside content.\");\n}\n\n// ---- main ----\nconst root = items[0].json;              // your posted array/object\nconst contentStr = getContentString(root);\nconst jsonStr = stripCodeFences(contentStr);\nconst parsed = parseJsonFromString(jsonStr);\n\n// Normalize to array\nconst arr = Array.isArray(parsed) ? parsed : [parsed];\n\n// Emit one item per record for the next node\nreturn arr.map(obj => ({ json: obj }));\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        0
+      ],
+      "id": "46709005-21c3-4672-8dba-3325caeb7fc4",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      data: items.map(item => item.json)\n    }\n  }\n]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        0
+      ],
+      "id": "f9b7b603-420f-4bf4-87ae-8467e9c91f6b",
+      "name": "Code in JavaScript1"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "192.168.0.26:5678",
+            "user-agent": "python-requests/2.32.5",
+            "accept-encoding": "gzip, deflate",
+            "accept": "*/*",
+            "connection": "keep-alive",
+            "content-type": "application/json",
+            "content-length": "906"
+          },
+          "params": {},
+          "query": {},
+          "body": [
+            {
+              "cik": 1321655,
+              "name": "Palantir Technologies Inc.",
+              "ticker": "PLTR",
+              "exchangename": "Nasdaq"
+            },
+            {
+              "cik": 937966,
+              "name": "ASML HOLDING NV",
+              "ticker": "ASML",
+              "exchangename": "Nasdaq"
+            },
+            {
+              "cik": 858877,
+              "name": "CISCO SYSTEMS, INC.",
+              "ticker": "CSCO",
+              "exchangename": "Nasdaq"
+            },
+            {
+              "cik": 1283699,
+              "name": "T-Mobile US, Inc.",
+              "ticker": "TMUS",
+              "exchangename": "Nasdaq"
+            },
+            {
+              "cik": 2488,
+              "name": "ADVANCED MICRO DEVICES INC",
+              "ticker": "AMD",
+              "exchangename": "Nasdaq"
+            },
+            {
+              "cik": 901832,
+              "name": "ASTRAZENECA PLC",
+              "ticker": "AZN",
+              "exchangename": "Nasdaq"
+            },
+            {
+              "cik": 1067839,
+              "name": "INVESCO QQQ TRUST, SERIES 1",
+              "ticker": "QQQ",
+              "exchangename": "Nasdaq"
+            },
+            {
+              "cik": 1707925,
+              "name": "LINDE PLC",
+              "ticker": "LIN",
+              "exchangename": "Nasdaq"
+            },
+            {
+              "cik": 896878,
+              "name": "INTUIT INC.",
+              "ticker": "INTU",
+              "exchangename": "Nasdaq"
+            },
+            {
+              "cik": 1594805,
+              "name": "SHOPIFY INC.",
+              "ticker": "SHOP",
+              "exchangename": "Nasdaq"
+            }
+          ],
+          "webhookUrl": "http://localhost:5678/webhook/b3abe7a3-13ae-4fab-a92c-e10b6219b1a3",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        []
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "25fcdb7d-dace-4319-9f53-f04db1ef878e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5c9b9abd009f65d917b60f4ba6c59dcc1bb516fef146ff24bb082bc7893ea569"
+  },
+  "id": "iU2TN3ETIop3KHua",
+  "tags": []
+}
