@@ -8,94 +8,142 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "Webhook-Input-Trigger",
+      "id": "5628890f-f486-4b77-8ce3-e79329e82e45",
       "name": "input trigger",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
       "position": [
-        240,
-        304
+        -288,
+        -224
       ],
       "webhookId": "b395247a-0805-4e8c-a532-9110fa0ab4ad"
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "http://192.168.0.59:8000/nav/search",
+        "url": "http://192.168.8.241:8000/nav/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "page_size",
+              "value": "500"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept-encoding",
+              "value": "gzip"
+            }
+          ]
+        },
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ $json.httpBodies.equity }}",
         "options": {
           "pagination": {
-            "mode": "page",
-            "pageKey": "page",
-            "nextPageKey": "next_page",
-            "sendQuery": true,
-            "sendBody": false
+            "pagination": {
+              "parameters": {
+                "parameters": [
+                  {
+                    "name": "page",
+                    "value": "={{ $response.body.next_page }}"
+                  }
+                ]
+              },
+              "paginationCompleteWhen": "other",
+              "completeExpression": "={{ $response.body.next_page == null}}",
+              "limitPagesFetched": true,
+              "maxRequests": 2
+            }
           }
-        },
-        "returnAll": true,
-        "limit": 100
+        }
       },
-      "id": "HTTP-Request-1",
+      "id": "a51f3b42-8635-46a2-b399-256f3bee31f4",
       "name": "equity",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
       "position": [
-        928,
-        192
+        160,
+        -320
       ]
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "http://192.168.0.59:8000/nav/search",
+        "url": "http://192.168.8.241:8000/nav/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "page_size",
+              "value": "500"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept-encoding",
+              "value": "gzip"
+            }
+          ]
+        },
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ $json.httpBodies.market }}",
         "options": {
           "pagination": {
-            "mode": "page",
-            "pageKey": "page",
-            "nextPageKey": "next_page",
-            "sendQuery": true,
-            "sendBody": false
+            "pagination": {
+              "parameters": {
+                "parameters": [
+                  {
+                    "name": "page",
+                    "value": "={{ $response.body.next_page }}"
+                  }
+                ]
+              },
+              "paginationCompleteWhen": "other",
+              "completeExpression": "={{ $response.body.next_page == null }}"
+            }
           }
-        },
-        "returnAll": true,
-        "limit": 100
+        }
       },
-      "id": "HTTP-Request-2",
+      "id": "acc5ef29-2e91-4bf0-8239-d34bded99f81",
       "name": "market",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
       "position": [
-        928,
-        432
+        160,
+        -128
       ]
     },
     {
       "parameters": {},
-      "id": "Merge-Results",
+      "id": "c50d1391-0402-40bb-9233-12c37a4f8a1b",
       "name": "Merge Results",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 2,
       "position": [
-        1184,
-        304
+        384,
+        -224
       ]
     },
     {
       "parameters": {
-        "jsCode": "const defaults = {\n  asofdate: null,\n  securitytype: ['Kartik', 'Akira'],\n  marketSector: ['Sandhya', 'Atharva'],\n  numberofdays: 20,\n  marketcaplowerlimit: 250000,\n  sharefloat: 0.7,\n  operator: 'OR',\n  httpBodies: {\n    market: {\n      filters: {},\n      groups: [\n        { attribute_code: 'marketSector', value: { eq: 'Equity', type: 'text' } }\n      ],\n      logic: 'OR'\n    },\n    equity: {\n      filters: { company_ids: [] },\n      groups: [\n        { attribute_code: 'securitytype', value: { eq: 'ETF', type: 'text' } }\n      ],\n      logic: 'AND'\n    }\n  }\n};\n\nfunction deepMerge(target, source) {\n  for (const key in source) {\n    if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {\n      if (!target[key]) target[key] = {};\n      deepMerge(target[key], source[key]);\n    } else {\n      target[key] = source[key];\n    }\n  }\n  return target;\n}\n\nreturn items.map(item => {\n  const inputBody = item.json.body || {};\n  let output = JSON.parse(JSON.stringify(defaults)); // deep copy\n  \n  output = deepMerge(output, inputBody);\n\n  // Use current date for asofdate if not provided\n  if (!output.asofdate) {\n    output.asofdate = new Date().toISOString().slice(0, 10);\n  }\n\n  // Set items_asofdate and asOf for market\n  output.httpBodies.market.items_asofdate = output.asofdate;\n  if (output.httpBodies.market.groups) {\n    output.httpBodies.market.groups.forEach(g => g.asOf = output.asofdate);\n  }\n\n  // Set items_asofdate and asOf for equity\n  output.httpBodies.equity.items_asofdate = output.asofdate;\n  if (output.httpBodies.equity.groups) {\n    output.httpBodies.equity.groups.forEach(g => g.asOf = output.asofdate);\n  }\n\n  item.json = output;\n  return item;\n});\n"
+        "jsCode": "const defaults = {\n  asofdate: null,\n  securitytype: ['Kartik', 'Akira'],\n  marketSector: ['Sandhya', 'Atharva'],\n  numberofdays: 20,\n  marketcaplowerlimit: 250000,\n  sharefloat: 0.7,\n  operator: 'OR',\n  httpBodies: {\n    market: {\n      filters: {},\n      groups: [\n        { attribute_code: 'marketSector', value: { eq: 'Equity', type: 'text' } }\n      ],\n      logic: 'OR'\n    },\n    equity: {\n  \"logic\": \"OR\",\n  \"groups\": [\n    {\n      \"attribute_code\": \"securitytype\",\n      \"value\": {\n        \"eq\": \"Common Stock\",\n        \"type\": \"text\"\n      },\n      \"asOf\": \"2026-05-06\"\n    }\n  ],\n  \"items_asofdate\": \"2026-01-01T00:00:00Z\",\n  \"items\": [\n    \"figi\",\n    \"shareclassfigi\"\n  ],\n  \"items_scope\": \"node\",\n  \"sort\": [\n    {\n      \"field\": \"valid_from\",\n      \"dir\": \"asc\"\n    }\n  ],\n  \"view\": {\n    \"items\": true,\n    \"ancestors\": true,\n    \"type_buckets\": true,\n    \"canonical_keys\": false\n  }\n\n    }\n  }\n};\n\nfunction deepMerge(target, source) {\n  for (const key in source) {\n    if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {\n      if (!target[key]) target[key] = {};\n      deepMerge(target[key], source[key]);\n    } else {\n      target[key] = source[key];\n    }\n  }\n  return target;\n}\n\nreturn items.map(item => {\n  const inputBody = item.json.body || {};\n  let output = JSON.parse(JSON.stringify(defaults)); // deep copy\n  \n  output = deepMerge(output, inputBody);\n\n  // Use current date for asofdate if not provided\n  if (!output.asofdate) {\n    output.asofdate = new Date().toISOString().slice(0, 10);\n  }\n\n  // Set items_asofdate and asOf for market\n  output.httpBodies.market.items_asofdate = output.asofdate;\n  if (output.httpBodies.market.groups) {\n    output.httpBodies.market.groups.forEach(g => g.asOf = output.asofdate);\n  }\n\n  // Set items_asofdate and asOf for equity\n  output.httpBodies.equity.items_asofdate = output.asofdate;\n  if (output.httpBodies.equity.groups) {\n    output.httpBodies.equity.groups.forEach(g => g.asOf = output.asofdate);\n  }\n\n  item.json = output;\n  return item;\n});\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        512,
-        448
+        -64,
+        -224
       ],
-      "id": "35d79330-2a1d-4500-a7d8-ff7e1e5b04d7",
+      "id": "937cb889-bb8d-40f6-9535-677c8e5870e3",
       "name": "Code in JavaScript"
     }
   ],
@@ -149,17 +197,23 @@
           }
         ]
       ]
+    },
+    "Merge Results": {
+      "main": [
+        []
+      ]
     }
   },
   "active": false,
   "settings": {
-    "saveExecutionProgress": true,
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": 3600
   },
-  "versionId": "a6ed8826-8b25-418b-9fe0-4223e3e30b38",
+  "versionId": "dccb6568-7075-4701-823c-3ffb6266326d",
   "meta": {
     "instanceId": "5c9b9abd009f65d917b60f4ba6c59dcc1bb516fef146ff24bb082bc7893ea569"
   },
-  "id": "Gbh605MyBbMptQdq",
+  "id": "BU3HSu2KTMRnqTRn",
   "tags": []
 }
