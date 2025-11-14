@@ -4,18 +4,20 @@
     {
       "parameters": {
         "operation": "getAll",
+        "simple": false,
         "filters": {
-          "q": "newer_than:1d",
+          "q": "newer_than:1d is:unread",
           "sender": "kartikseattle@gmail.com"
-        }
+        },
+        "options": {}
       },
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        -480,
-        48
+        -1040,
+        -48
       ],
-      "id": "983d2539-1c34-4e98-9714-5ca459ef31ad",
+      "id": "058c8e1f-8cf6-4345-84af-0bdee89db2f4",
       "name": "Get emails (last 24h)",
       "webhookId": "28b0ef78-3d3e-4044-be25-fc6ee7a8e35c",
       "credentials": {
@@ -40,7 +42,7 @@
                 "conditions": [
                   {
                     "id": "88742d1f-d655-4ee5-ad2a-fe79c58c7a20",
-                    "leftValue": "={{ $json.output.category }}",
+                    "leftValue": "={{ $json.category }}",
                     "rightValue": "MisssingData",
                     "operator": {
                       "type": "string",
@@ -65,7 +67,7 @@
                 "conditions": [
                   {
                     "id": "b2341600-9a68-4fe2-8d65-4df99953153a",
-                    "leftValue": "={{ $json.output.category }}",
+                    "leftValue": "={{ $json.category }}",
                     "rightValue": "IncorrectData",
                     "operator": {
                       "type": "string",
@@ -90,7 +92,7 @@
                 "conditions": [
                   {
                     "id": "d65b4495-d60f-40af-9bb9-cd62fb838fcc",
-                    "leftValue": "={{ $json.output.category }}",
+                    "leftValue": "={{ $json.category }}",
                     "rightValue": "Delay",
                     "operator": {
                       "type": "string",
@@ -107,16 +109,16 @@
           ]
         },
         "options": {
-          "allMatchingOutputs": false
+          "allMatchingOutputs": true
         }
       },
-      "id": "7088f940-2b6c-41fe-97bd-b319e66fbb84",
+      "id": "f7d67181-443d-4588-8ba5-78658631a430",
       "name": "Route by category",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3,
       "position": [
-        160,
-        48
+        -208,
+        -48
       ]
     },
     {
@@ -140,7 +142,68 @@
           "mappingMode": "autoMapInputData",
           "value": {},
           "matchingColumns": [],
-          "schema": [],
+          "schema": [
+            {
+              "id": "output",
+              "displayName": "output",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "gmailMessageId",
+              "displayName": "gmailMessageId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "gmailSubject",
+              "displayName": "gmailSubject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "gmailBody",
+              "displayName": "gmailBody",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "attributes",
+              "displayName": "attributes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
           "attemptToConvertTypes": false,
           "convertFieldsToString": false
         },
@@ -149,10 +212,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        352,
-        -112
+        -16,
+        -208
       ],
-      "id": "96b0ccce-78b8-473b-8359-04407f8c57f3",
+      "id": "01e93cd3-25c2-4b9a-825e-23d196f24c8a",
       "name": "Append MissingData",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -191,10 +254,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        352,
-        48
+        -16,
+        -48
       ],
-      "id": "9f309e36-999e-4cc4-baf8-79c4af92d885",
+      "id": "3301f9b3-41ec-4134-b814-451db0d581b4",
       "name": "Append IncorrectData",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -224,7 +287,58 @@
           "mappingMode": "autoMapInputData",
           "value": {},
           "matchingColumns": [],
-          "schema": [],
+          "schema": [
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "attributes",
+              "displayName": "attributes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "gmailMessageId",
+              "displayName": "gmailMessageId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "gmailSubject",
+              "displayName": "gmailSubject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "gmailBody",
+              "displayName": "gmailBody",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
           "attemptToConvertTypes": false,
           "convertFieldsToString": false
         },
@@ -233,10 +347,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        352,
-        208
+        -16,
+        112
       ],
-      "id": "60f810b0-ef64-4388-9904-fd89cf8bbaf1",
+      "id": "53453a7f-e5ec-4612-a1a9-703fa4f16a8b",
       "name": "Append Delay",
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -248,20 +362,49 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Subject: {{$json[\"subject\"]}}\n\nBody:\n{{$json[\"textPlain\"] ?? $json[\"textHtml\"] ?? $json[\"snippet\"] ?? \"\"}}",
+        "text": "=Subject: {{$json[\"subject\"]}}\n\nBody:\n{{$json[\"text\"] ?? $json[\"textAsHtml\"] ?? \"\"}}",
         "hasOutputParser": true,
         "options": {
-          "systemMessage": "You are an email classifier for IDW support.\n\nGiven the email subject and body, you must:\n1. Classify the email into exactly ONE of the following categories:\n   - \"MisssingData\"\n   - \"IncorrectData\"\n   - \"Delay\"\n\n2. Based on the chosen category, extract attributes and return a single JSON object with keys \"category\" and \"attributes\".\n\nFor each category, extract these attributes:\n- If category = \"MisssingData\":\n    attributes must contain:\n      - \"Indexmarker\" (string or null)\n      - \"Type_of_data\" (array of strings indicating what data is missing)\n      - \"shipment_date\" (always null for this category)\n\n- If category = \"IncorrectData\":\n    attributes must contain:\n      - \"Indexmarker\" (string or null)\n      - \"Type_of_data\" (array of strings indicating what data is incorrect)\n      - \"shipment_date\" (always null for this category)\n\n- If category = \"Delay\":\n    attributes must contain:\n      - \"Indexmarker\" (string or null)\n      - \"shipment_date\" (string date if mentioned, otherwise null)\n      - \"Type_of_data\" (array of strings indicating what data is delayed)\n\n3. If any attribute is not explicitly present in the email, set it to null or an empty array as appropriate.\n\n4. Your response MUST be ONLY a single JSON object, for example:\n{\n  \"category\": \"MisssingData\",\n  \"attributes\": {\n    \"Indexmarker\": \"RU5000\",\n    \"Type_of_data\": [\"T1\", \"T2\", \"T3\", \"T4\", \"T5\"],\n    \"shipment_date\": null\n  }\n}\n\nDo not include any explanatory text or additional fields outside this JSON object."
+          "systemMessage": "You are an email classifier for IDW support.\n\nCRITICAL INSTRUCTIONS:\n1. Read the email carefully and identify ALL distinct issues mentioned\n2. For EACH unique combination of indexmarkers and data types, create a SEPARATE object in the array\n3. DO NOT combine different indexmarkers or data types into a single object\n4. Create one object per statement in the email\n\nCategories:\n- \"MisssingData\" - for missing data issues\n- \"IncorrectData\" - for incorrect/wrong data issues  \n- \"Delay\" - for delayed data issues\n\nFor each issue found, extract:\n- \"Indexmarker\": array of index names that share the SAME data type issue (e.g., [\"R100\", \"R200\"])\n- \"Type_of_data\": array of data types affected for those SPECIFIC indexmarkers (e.g., [\"T1\"])\n\nRULES:\n- If the email says \"T1 data missing for R100, R200\" → ONE object with Indexmarker: [\"R100\", \"R200\"], Type_of_data: [\"T1\"]\n- If the email says \"T1 missing for R100. T2 missing for R200\" → TWO objects, one for each statement\n- NEVER merge unrelated indexmarker groups together\n- NEVER merge different data types together unless they're mentioned together for the same indexmarkers\n\nEXAMPLES:\n\nInput: \"T1 data missing for R100, R200, R300. T2 data missing for T100, T200. T3-T5 missing for S100. Delays in T2-T5 for Q100.\"\n\nCorrect Output:\n[\n  {\n    \"category\": \"MisssingData\",\n    \"attributes\": {\n      \"Indexmarker\": [\"R100\", \"R200\", \"R300\"],\n      \"Type_of_data\": [\"T1\"]\n    }\n  },\n  {\n    \"category\": \"MisssingData\",\n    \"attributes\": {\n      \"Indexmarker\": [\"T100\", \"T200\"],\n      \"Type_of_data\": [\"T2\"]\n    }\n  },\n  {\n    \"category\": \"MisssingData\",\n    \"attributes\": {\n      \"Indexmarker\": [\"S100\"],\n      \"Type_of_data\": [\"T3\", \"T4\", \"T5\"]\n    }\n  },\n  {\n    \"category\": \"Delay\",\n    \"attributes\": {\n      \"Indexmarker\": [\"Q100\"],\n      \"Type_of_data\": [\"T2\", \"T3\", \"T4\", \"T5\"]\n    }\n  }\n]\n\nYour response MUST be ONLY a JSON array. No explanatory text."
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3,
       "position": [
-        -272,
-        32
+        -832,
+        -64
       ],
-      "id": "7129c4a6-8d41-42e3-9085-8022cbbe18b6",
+      "id": "ee3acf69-2288-48b9-af4c-b3cb01a5bb1a",
       "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "gmailMessageId",
+              "value": "={{ $json.gmailMessageId }}"
+            },
+            {
+              "name": "gmailSubject",
+              "value": "={{ $json.gmailSubject }}"
+            },
+            {
+              "name": "gmailBody",
+              "value": "={{ $json.gmailBody }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        -400,
+        -64
+      ],
+      "id": "b194218a-e4a2-4df5-95fc-0b780d2722a1",
+      "name": "Capture Email Metadata"
     },
     {
       "parameters": {
@@ -276,10 +419,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
       "typeVersion": 1.3,
       "position": [
-        -416,
-        240
+        -976,
+        144
       ],
-      "id": "854b3d8a-a0e5-44a8-86f1-b82d74479a9c",
+      "id": "f5fc4811-0974-41fc-8b4c-500a593cd7dc",
       "name": "OpenAI Chat Model",
       "credentials": {
         "openAiApi": {
@@ -290,15 +433,15 @@
     },
     {
       "parameters": {
-        "jsonSchemaExample": "{\n  \"category\": \"MisssingData\",\n  \"attributes\": {\n    \"Indexmarker\": \"RU5000\",\n    \"Type_of_data\": [\"T1\", \"T2\", \"T3\", \"T4\", \"T5\"],\n    \"shipment_date\": null\n  }\n}"
+        "jsonSchemaExample": "[\n  {\n    \"category\": \"MisssingData\",\n    \"attributes\": {\n      \"Indexmarker\": [\"R100\", \"R200\", \"R300\"],\n      \"Type_of_data\": [\"T1\"]\n    }\n  },\n  {\n    \"category\": \"MisssingData\",\n    \"attributes\": {\n      \"Indexmarker\": [\"T100\", \"T200\"],\n      \"Type_of_data\": [\"T2\"]\n    }\n  },\n  {\n    \"category\": \"Delay\",\n    \"attributes\": {\n      \"Indexmarker\": [\"Q100\"],\n      \"Type_of_data\": [\"T2\", \"T3\", \"T4\", \"T5\"]\n    }\n  }\n]"
       },
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
       "typeVersion": 1.3,
       "position": [
-        -112,
-        240
+        -672,
+        144
       ],
-      "id": "e2ef6deb-dbb9-46f9-b29f-e52562a58729",
+      "id": "eafce546-0584-4b87-9fb1-317a3871914b",
       "name": "Structured Output Parser"
     },
     {
@@ -306,11 +449,48 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        -656,
-        48
+        -1216,
+        -48
       ],
-      "id": "f4ed6b18-36cf-4d7f-a035-57ca13cf7a3c",
-      "name": "When clicking ‘Execute workflow’"
+      "id": "17b44dd6-f438-4d00-aa25-3ecc23dfc3cc",
+      "name": "When clicking 'Execute workflow'"
+    },
+    {
+      "parameters": {
+        "jsCode": "// This node splits the AI output array into separate items\n// so each category can be routed independently\n\nconst aiOutput = $input.item.json.output;\nconst gmailMetadata = {\n  gmailMessageId: $('Get emails (last 24h)').first().json.id,\n  gmailSubject: $('Get emails (last 24h)').first().json.headers.subject,\n  gmailBody: $('Get emails (last 24h)').first().json.text\n};\n\n// If output is already an array, spread it\nif (Array.isArray(aiOutput)) {\n  return aiOutput.map(item => ({\n    json: {\n      ...item,\n      ...gmailMetadata\n    }\n  }));\n}\n\n// If output is a single object, wrap it in array\nreturn [{\n  json: {\n    ...aiOutput,\n    ...gmailMetadata\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -544,
+        -64
+      ],
+      "id": "18e56278-9154-4a70-ad35-2b7fb7bd360d",
+      "name": "Split Categories"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Split Categories').item.json.gmailMessageId }}",
+        "labelIds": [
+          "UNREAD"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        176,
+        -48
+      ],
+      "id": "210381e3-132b-4bf2-932b-ab9050fbc530",
+      "name": "Mark Email as Read",
+      "webhookId": "504c314a-47aa-4ba0-9e0f-cd0ce332b03f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ZdjoGsiOFPcQKoxe",
+          "name": "Gmail account"
+        }
+      }
     }
   ],
   "pinData": {},
@@ -351,7 +531,51 @@
         ]
       ]
     },
+    "Append MissingData": {
+      "main": [
+        [
+          {
+            "node": "Mark Email as Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append IncorrectData": {
+      "main": [
+        [
+          {
+            "node": "Mark Email as Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append Delay": {
+      "main": [
+        [
+          {
+            "node": "Mark Email as Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Split Categories",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Capture Email Metadata": {
       "main": [
         [
           {
@@ -384,11 +608,22 @@
         ]
       ]
     },
-    "When clicking ‘Execute workflow’": {
+    "When clicking 'Execute workflow'": {
       "main": [
         [
           {
             "node": "Get emails (last 24h)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Categories": {
+      "main": [
+        [
+          {
+            "node": "Capture Email Metadata",
             "type": "main",
             "index": 0
           }
@@ -400,7 +635,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "97583061-3eb3-4d03-a7b7-738ff32c087b",
+  "versionId": "e49d9e4e-6f47-4927-98bf-79ceec865644",
   "meta": {
     "instanceId": "8641966211afb81d2015f0109a5beabd03b815123bf2c6e3c01bea70a653ba83"
   },
